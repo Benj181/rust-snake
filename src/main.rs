@@ -1,6 +1,7 @@
-use bevy::prelude::*;
 mod player;
 use player::PlayerPlugin;
+
+use bevy::prelude::*;
 
 fn main() {
     App::new()
