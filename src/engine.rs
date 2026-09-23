@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-use std::fmt;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Direction {
@@ -7,17 +6,6 @@ pub enum Direction {
     Down,
     Right,
     Left,
-}
-
-impl fmt::Display for Direction {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Direction::Up => write!(f, "Up"),
-            Direction::Down => write!(f, "Down"),
-            Direction::Right => write!(f, "Right"),
-            Direction::Left => write!(f, "Left"),
-        }
-    }
 }
 
 impl Direction {
@@ -41,18 +29,17 @@ impl Coordinate {
     fn new() -> Self {
         Self { x: 0, y: 0 }
     }
-}
 
-impl fmt::Display for Coordinate {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({}, {})", self.x, self.y)
+    pub fn get_coordinate(&self) -> (i32, i32) {
+        (self.x, self.y)
     }
 }
+
 #[derive(Debug)]
 pub struct Snake {
-    pub body: VecDeque<Coordinate>,
+    body: VecDeque<Coordinate>,
     body_length: usize,
-    pub direction: Direction,
+    direction: Direction,
 }
 
 impl Snake {
@@ -71,7 +58,7 @@ impl Snake {
         snake
     }
 
-    fn get_head_position(&self) -> &Coordinate {
+    pub fn get_head_position(&self) -> &Coordinate {
         &self.body[0]
     }
 
@@ -105,5 +92,9 @@ impl Snake {
         if self.direction.opposite() != new_direction {
             self.direction = new_direction;
         }
+    }
+
+    pub fn get_direction(&self) -> Direction {
+        self.direction
     }
 }

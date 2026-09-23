@@ -1,5 +1,6 @@
 mod engine;
 mod input;
+mod render;
 
 use crate::engine::Direction;
 use crate::engine::Snake;
@@ -31,7 +32,6 @@ fn main() -> std::io::Result<()> {
                 if let Some(direction) = Direction::from_key(&key) {
                     snake.change_direction(direction);
                 }
-                queue!(stdout(), cursor::MoveTo(0, 0), Print(snake.direction))?;
                 if key.code == KeyCode::Char('q') {
                     break;
                 }
@@ -41,10 +41,7 @@ fn main() -> std::io::Result<()> {
         if Instant::now() - last_move >= update_interval {
             snake.do_move();
             last_move = Instant::now();
-            queue!(stdout(), cursor::MoveTo(0, 0), Print(snake.direction))?;
         }
-        que
-        stdout().flush()?;
     }
 
     execute!(stdout(), cursor::Show)?;
