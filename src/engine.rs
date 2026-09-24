@@ -21,8 +21,8 @@ impl Direction {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Coordinate {
-    x: i32,
-    y: i32,
+    x: u16,
+    y: u16,
 }
 
 impl Coordinate {
@@ -30,7 +30,7 @@ impl Coordinate {
         Self { x: 0, y: 0 }
     }
 
-    pub fn get_coordinate(&self) -> (i32, i32) {
+    pub fn get_coordinate(&self) -> (u16, u16) {
         (self.x, self.y)
     }
 }
@@ -43,7 +43,7 @@ pub struct Snake {
 }
 
 impl Snake {
-    pub fn new(start_size: i32) -> Self {
+    pub fn new(start_size: u16) -> Self {
         assert!(start_size >= 1);
 
         let mut snake = Self {

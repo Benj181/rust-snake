@@ -21,7 +21,7 @@ fn main() -> std::io::Result<()> {
     let update_interval = Duration::from_millis(150);
     let mut last_move = Instant::now();
 
-    let mut snake = Snake::new(5);
+    let mut snake = Snake::new(5u16);
 
     loop {
         let poll_timeout = update_interval.saturating_sub(Instant::now() - last_move);
