@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Direction {
     Up,
     Down,
@@ -9,12 +9,12 @@ pub enum Direction {
 }
 
 impl Direction {
-    fn opposite(&self) -> Direction {
-        match *self {
-            Direction::Up => Direction::Down,
-            Direction::Down => Direction::Up,
-            Direction::Right => Direction::Left,
-            Direction::Left => Direction::Right,
+    const fn opposite(self) -> Self {
+        match self {
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
+            Self::Right => Self::Left,
+            Self::Left => Self::Right,
         }
     }
 }
@@ -26,11 +26,11 @@ pub struct Coordinate {
 }
 
 impl Coordinate {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self { x: 0, y: 0 }
     }
 
-    pub fn get_coordinate(&self) -> (u16, u16) {
+    pub const fn get_coordinate(self) -> (u16, u16) {
         (self.x, self.y)
     }
 }
@@ -48,7 +48,7 @@ impl Snake {
 
         let mut snake = Self {
             body: VecDeque::new(),
-            body_length: start_size as usize,
+            body_length: usize::from(start_size),
             direction: Direction::Up,
         };
         snake.body.push_front(Coordinate::new());
