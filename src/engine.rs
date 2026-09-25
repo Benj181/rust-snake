@@ -1,7 +1,6 @@
 use crate::input::PlayerIntent;
 use rand::seq::IndexedRandom;
 use std::collections::VecDeque;
-use std::fmt;
 use std::num::NonZeroU16;
 
 const STARTING_BODY_LENGTH: usize = 3;
@@ -26,17 +25,6 @@ impl Direction {
     }
 }
 
-impl fmt::Display for Direction {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Up => write!(f, "Up"),
-            Self::Down => write!(f, "Down"),
-            Self::Right => write!(f, "Right"),
-            Self::Left => write!(f, "Left"),
-        }
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Coordinate {
     x: u16,
@@ -57,11 +45,40 @@ impl Coordinate {
     }
 }
 
-impl fmt::Display for Coordinate {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let cords = self.get_coordinate();
-        write!(f, "({}, {})", cords.0, cords.1)
+#[derive(Debug, Clone, Copy)]
+pub struct Grid {
+    width: NonZeroU16,
+    height: NonZeroU16,
+}
+
+impl Grid {
+    pub const fn new((width, height): (u16, u16)) -> Option<Self> {
+        match (NonZeroU16::new(width), NonZeroU16::new(height)) {
+            (Some(width), Some(height)) => Some(Self { width, height }),
+            _ => None,
+        }
     }
+
+    pub const fn width(self) -> u16 {
+        self.width.get()
+    }
+
+    pub const fn height(self) -> u16 {
+        self.height.get()
+    }
+
+    fn cells(self) -> impl Iterator<Item = Coordinate> {
+        (0..self.height()).flat_map(move |y| (0..self.width()).map(move |x| Coordinate::new(x, y)))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum GameState {
+    Menu,
+    Active,
+    GameOver,
+    Won,
+    Pause,
 }
 
 #[derive(Debug)]
@@ -69,9 +86,7 @@ pub struct Snake {
     head: Coordinate,
     body: VecDeque<Coordinate>,
     body_length: usize,
-    /// The direction the snake last moved in.
     direction: Direction,
-    /// The direction it will move in on the next tick.
     next_direction: Direction,
 }
 
@@ -136,47 +151,10 @@ impl Snake {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Grid {
-    width: NonZeroU16,
-    height: NonZeroU16,
-}
-
-impl Grid {
-    pub const fn new((width, height): (u16, u16)) -> Option<Self> {
-        match (NonZeroU16::new(width), NonZeroU16::new(height)) {
-            (Some(width), Some(height)) => Some(Self { width, height }),
-            _ => None,
-        }
-    }
-
-    pub const fn width(self) -> u16 {
-        self.width.get()
-    }
-
-    pub const fn height(self) -> u16 {
-        self.height.get()
-    }
-
-    fn cells(self) -> impl Iterator<Item = Coordinate> {
-        (0..self.height()).flat_map(move |y| (0..self.width()).map(move |x| Coordinate::new(x, y)))
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum GameState {
-    Menu,
-    Active,
-    GameOver,
-    Won,
-    Pause,
-}
-
 #[derive(Debug)]
 pub struct World {
     snake: Snake,
     grid: Grid,
-    /// Up to `FOOD_COUNT` pieces. Fewer only when the board is nearly full.
     food: Vec<Coordinate>,
     game_state: GameState,
 }
@@ -216,8 +194,6 @@ impl World {
             self.snake.grow();
         }
 
-        // Move before checking for self-collision, so moving into the cell the tail
-        // is leaving is allowed.
         self.snake.do_move(next_head);
         if self.snake.has_collided_with_itself() {
             self.game_state = GameState::GameOver;
@@ -226,8 +202,6 @@ impl World {
         }
     }
 
-    /// Tops the food back up to `FOOD_COUNT` on random free cells.
-    /// The game is won when there is no food left and nowhere to place more.
     fn refill_food(&mut self) {
         let missing = FOOD_COUNT.saturating_sub(self.food.len());
         let free_cells: Vec<Coordinate> = self
@@ -269,7 +243,6 @@ impl World {
         std::iter::once(self.snake.head).chain(self.snake.body.iter().copied())
     }
 
-    /// The number of food eaten. Each one grows the body by one cell.
     pub const fn get_score(&self) -> usize {
         self.snake.body_length.saturating_sub(STARTING_BODY_LENGTH)
     }

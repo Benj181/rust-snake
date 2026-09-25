@@ -2,6 +2,7 @@ use crate::engine::{Coordinate, GameState, Grid, World};
 use crossterm::cursor::{self, MoveTo};
 use crossterm::style::{Print, PrintStyledContent, StyledContent, Stylize};
 use crossterm::terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::terminal::{BeginSynchronizedUpdate, EndSynchronizedUpdate};
 use crossterm::{execute, queue};
 use std::io::{self, Write};
 
@@ -29,7 +30,7 @@ impl<W: Write> Renderer<W> {
     }
 
     pub fn draw(&mut self, world: &World) -> io::Result<()> {
-        queue!(self.out, Clear(ClearType::All))?;
+        queue!(self.out, BeginSynchronizedUpdate, Clear(ClearType::All))?;
         self.draw_border(world.get_grid())?;
         self.draw_score(world)?;
         for &food in world.get_food() {
@@ -37,6 +38,7 @@ impl<W: Write> Renderer<W> {
         }
         self.draw_snake(world)?;
         self.draw_overlay(world)?;
+        queue!(self.out, MoveTo(0, 0), EndSynchronizedUpdate)?;
         self.out.flush()
     }
 
@@ -65,7 +67,6 @@ impl<W: Write> Renderer<W> {
         Ok(())
     }
 
-    /// Writes the score into the top border, leaving the corners intact.
     fn draw_score(&mut self, world: &World) -> io::Result<()> {
         let text = format!(" Score: {} ", world.get_score());
         let inner_width = world.get_grid().width().saturating_mul(CELL_WIDTH);

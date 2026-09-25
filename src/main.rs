@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 fn main() -> io::Result<()> {
     let mut renderer = Renderer::new(BufWriter::new(io::stdout()))?;
 
-    let update_interval = Duration::from_millis(150);
+    let update_interval = Duration::from_millis(100);
     let mut last_move = Instant::now();
 
     let grid = Grid::new(render::grid_size(terminal::size()?))
@@ -35,7 +35,14 @@ fn main() -> io::Result<()> {
         if last_move.elapsed() >= update_interval {
             world.tick();
             renderer.draw(&world)?;
-            last_move = Instant::now();
+            let next = last_move
+                .checked_add(update_interval)
+                .unwrap_or_else(Instant::now);
+            last_move = if next.elapsed() >= update_interval {
+                Instant::now()
+            } else {
+                next
+            };
         }
     }
 
