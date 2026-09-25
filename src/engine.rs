@@ -5,6 +5,7 @@ use std::fmt;
 use std::num::NonZeroU16;
 
 const STARTING_BODY_LENGTH: usize = 3;
+const FOOD_COUNT: usize = 5;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Direction {
@@ -175,7 +176,8 @@ pub enum GameState {
 pub struct World {
     snake: Snake,
     grid: Grid,
-    food: Option<Coordinate>,
+    /// Up to `FOOD_COUNT` pieces. Fewer only when the board is nearly full.
+    food: Vec<Coordinate>,
     game_state: GameState,
 }
 
@@ -187,10 +189,10 @@ impl World {
                 STARTING_BODY_LENGTH,
             ),
             grid,
-            food: None,
+            food: Vec::with_capacity(FOOD_COUNT),
             game_state: GameState::Active,
         };
-        world.spawn_food();
+        world.refill_food();
         world
     }
 
@@ -208,8 +210,9 @@ impl World {
             return;
         };
 
-        let eats_food = self.food == Some(next_head);
+        let eats_food = self.food.contains(&next_head);
         if eats_food {
+            self.food.retain(|&food| food != next_head);
             self.snake.grow();
         }
 
@@ -219,20 +222,26 @@ impl World {
         if self.snake.has_collided_with_itself() {
             self.game_state = GameState::GameOver;
         } else if eats_food {
-            self.spawn_food();
+            self.refill_food();
         }
     }
 
-    /// Places food on a random free cell, or wins the game if there is none left.
-    fn spawn_food(&mut self) {
+    /// Tops the food back up to `FOOD_COUNT` on random free cells.
+    /// The game is won when there is no food left and nowhere to place more.
+    fn refill_food(&mut self) {
+        let missing = FOOD_COUNT.saturating_sub(self.food.len());
         let free_cells: Vec<Coordinate> = self
             .grid
             .cells()
-            .filter(|&cell| !self.snake.occupies(cell))
+            .filter(|&cell| !self.snake.occupies(cell) && !self.food.contains(&cell))
             .collect();
 
-        self.food = free_cells.choose(&mut rand::rng()).copied();
-        if self.food.is_none() {
+        self.food.extend(
+            free_cells
+                .choose_multiple(&mut rand::rng(), missing)
+                .copied(),
+        );
+        if self.food.is_empty() {
             self.game_state = GameState::Won;
         }
     }
@@ -260,8 +269,8 @@ impl World {
         self.snake.body_length.saturating_sub(STARTING_BODY_LENGTH)
     }
 
-    pub const fn get_food(&self) -> Option<Coordinate> {
-        self.food
+    pub const fn get_food(&self) -> &[Coordinate] {
+        self.food.as_slice()
     }
 
     pub const fn get_grid(&self) -> Grid {

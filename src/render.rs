@@ -32,7 +32,7 @@ impl<W: Write> Renderer<W> {
         queue!(self.out, Clear(ClearType::All))?;
         self.draw_border(world.get_grid())?;
         self.draw_score(world)?;
-        if let Some(food) = world.get_food() {
+        for &food in world.get_food() {
             self.draw_cell(food, CELL.red())?;
         }
         self.draw_snake(world)?;
