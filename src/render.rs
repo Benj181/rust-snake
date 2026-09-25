@@ -99,7 +99,8 @@ impl<W: Write> Renderer<W> {
             GameState::Pause => ("PAUSED", "p to resume, q to quit"),
             GameState::GameOver => ("GAME OVER", "q to quit"),
             GameState::Won => ("YOU WON", "q to quit"),
-            GameState::Menu | GameState::Active => return Ok(()),
+            GameState::Menu => ("SNAKE", "Enter to start, q to quit"),
+            GameState::Active => return Ok(()),
         };
 
         let grid = world.get_grid();

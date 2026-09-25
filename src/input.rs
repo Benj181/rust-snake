@@ -6,6 +6,7 @@ use std::time::Duration;
 #[derive(Debug, Clone, Copy)]
 pub enum PlayerIntent {
     Move(Direction),
+    Start,
     Pause,
     Quit,
 }
@@ -17,6 +18,7 @@ impl PlayerIntent {
             KeyCode::Char('s') | KeyCode::Down => Some(Self::Move(Direction::Down)),
             KeyCode::Char('d') | KeyCode::Right => Some(Self::Move(Direction::Right)),
             KeyCode::Char('a') | KeyCode::Left => Some(Self::Move(Direction::Left)),
+            KeyCode::Enter | KeyCode::Char(' ') => Some(Self::Start),
             KeyCode::Char('p') => Some(Self::Pause),
             KeyCode::Char('q') | KeyCode::Esc => Some(Self::Quit),
             _ => None,

@@ -190,7 +190,7 @@ impl World {
             ),
             grid,
             food: Vec::with_capacity(FOOD_COUNT),
-            game_state: GameState::Active,
+            game_state: GameState::Menu,
         };
         world.refill_food();
         world
@@ -249,6 +249,11 @@ impl World {
     pub fn handle(&mut self, intent: PlayerIntent) {
         match intent {
             PlayerIntent::Move(dir) => self.snake.change_direction(dir),
+            PlayerIntent::Start => {
+                if self.game_state == GameState::Menu {
+                    self.game_state = GameState::Active;
+                }
+            }
             PlayerIntent::Pause => {
                 self.game_state = match self.game_state {
                     GameState::Active => GameState::Pause,
