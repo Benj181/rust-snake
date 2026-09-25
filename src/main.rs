@@ -2,53 +2,41 @@ mod engine;
 mod input;
 mod render;
 
-use crate::engine::{Direction, World};
-use crossterm::{
-    cursor,
-    event::{self, Event, KeyCode},
-    execute, queue,
-    style::Print,
-    terminal,
-};
-use std::io::{Write, stdout};
+use crate::engine::{Grid, World};
+use crate::input::PlayerIntent;
+use crate::render::Renderer;
+use crossterm::terminal;
+use std::io::{self, BufWriter};
 use std::time::{Duration, Instant};
 
-struct TerminalGuard;
-
-impl TerminalGuard {
-    fn new() -> std::io::Result<Self> {
-        terminal::enable_raw_mode()?;
-        let guard = Self;
-        execute!(stdout(), cursor::Hide)?;
-        Ok(guard)
-    }
-}
-
-impl Drop for TerminalGuard {
-    fn drop(&mut self) {
-        let _ = execute!(stdout(), cursor::Show);
-        let _ = terminal::disable_raw_mode();
-    }
-}
-
-fn main() -> std::io::Result<()> {
-    let _guard = TerminalGuard::new()?;
+fn main() -> io::Result<()> {
+    let mut renderer = Renderer::new(BufWriter::new(io::stdout()))?;
 
     let update_interval = Duration::from_millis(150);
-    let last_move = Instant::now();
+    let mut last_move = Instant::now();
+
+    let grid = Grid::new(render::grid_size(terminal::size()?))
+        .ok_or_else(|| io::Error::other("terminal is too small"))?;
+    let mut world = World::new(grid);
+    renderer.draw(&world)?;
 
     loop {
         let poll_timeout = update_interval.saturating_sub(last_move.elapsed());
-        if matches!(event::poll(poll_timeout), Ok(true))
-            && let Ok(Event::Key(key)) = event::read()
-        {
-            break;
+        if let Some(intent) = input::poll(poll_timeout)? {
+            match intent {
+                PlayerIntent::Quit => break,
+                other => {
+                    world.handle(other);
+                    renderer.draw(&world)?;
+                }
+            }
         }
 
-        // if Instant::now() - last_move >= update_interval {
-        //     snake.do_move();
-        //     last_move = Instant::now();
-        // }
+        if last_move.elapsed() >= update_interval {
+            world.tick();
+            renderer.draw(&world)?;
+            last_move = Instant::now();
+        }
     }
 
     Ok(())
