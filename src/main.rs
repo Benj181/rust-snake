@@ -9,7 +9,6 @@ use macroquad::prelude::*;
 async fn main() {
     loop {
         clear_background(BLACK);
-        // draw things here
         next_frame().await;
     }
 }
