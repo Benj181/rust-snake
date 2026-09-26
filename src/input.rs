@@ -1,15 +1,7 @@
-use crate::engine::Direction;
+use crate::engine::{Direction, PlayerIntent};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use std::io;
 use std::time::Duration;
-
-#[derive(Debug, Clone, Copy)]
-pub enum PlayerIntent {
-    Move(Direction),
-    Start,
-    Pause,
-    Quit,
-}
 
 impl PlayerIntent {
     const fn from_key(key: KeyEvent) -> Option<Self> {

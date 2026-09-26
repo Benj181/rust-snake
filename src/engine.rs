@@ -1,4 +1,3 @@
-use crate::input::PlayerIntent;
 use rand::seq::IndexedRandom;
 use std::collections::VecDeque;
 use std::num::NonZeroU16;
@@ -79,6 +78,14 @@ pub enum GameState {
     GameOver,
     Won,
     Pause,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum PlayerIntent {
+    Move(Direction),
+    Start,
+    Pause,
+    Quit,
 }
 
 #[derive(Debug)]
