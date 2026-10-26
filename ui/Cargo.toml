@@ -1,0 +1,24 @@
+[package]
+name = "ui"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+shared.workspace = true
+leptos.workspace = true
+wasm-bindgen.workspace = true
+console_error_panic_hook.workspace = true
+getrandom.workspace = true
+
+[dependencies.web-sys]
+workspace = true
+features = [
+    "Window",
+    "Document",
+    "HtmlCanvasElement",
+    "CanvasRenderingContext2d",
+    "KeyboardEvent",
+]
+
+[lints]
+workspace = true

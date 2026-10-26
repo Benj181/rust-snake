@@ -1,2 +1,6 @@
 [target.aarch64-pc-windows-msvc]
 linker = "rust-lld.exe"
+
+# getrandom (used by rand) needs this cfg to pick its JS backend in the browser.
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
